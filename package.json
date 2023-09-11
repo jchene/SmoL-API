@@ -1,0 +1,29 @@
+{
+	"name": "first-sst-app",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "sst dev",
+		"build": "sst build",
+		"deploy": "sst deploy",
+		"remove": "sst remove",
+		"console": "sst console",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@tsconfig/node16": "^16.1.1",
+		"constructs": "10.2.69",
+		"sst": "^2.24.24",
+		"typescript": "^5.2.2"
+	},
+	"workspaces": [
+		"packages/*"
+	],
+	"dependencies": {
+		"@aws-sdk/client-dynamodb": "^3.409.0",
+		"@trpc/server": "^10.38.1",
+		"electrodb": "^2.9.1",
+		"kuuid": "^1.0.1"
+	}
+}

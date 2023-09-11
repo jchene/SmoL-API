@@ -1,0 +1,14 @@
+{
+	"extends": "@tsconfig/node16/tsconfig.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "node",
+		"baseUrl": ".",
+		"paths": {
+			"@first-sst-app/core/*": [
+				"../core/src/*"
+			]
+		},
+		"strict": true
+	}
+}

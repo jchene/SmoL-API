@@ -1,0 +1,17 @@
+{
+	"name": "@first-sst-app/core",
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"test": "sst bind vitest",
+		"typecheck": "tsc -noEmit"
+	},
+	"devDependencies": {
+		"@types/node": "^20.5.9",
+		"vitest": "^0.34.3",
+		"sst": "^2.24.24"
+	},
+	"dependencies": {
+		"zod": "^3.22.2"
+	}
+}

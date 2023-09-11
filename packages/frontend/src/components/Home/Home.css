@@ -1,0 +1,14 @@
+.title-container {
+    color: white;
+    text-align: center;
+    background-color: #7932bd;
+
+	border: 1px solid;
+	border-radius: 50px;
+	border-color: black;
+
+	padding: 30px 0;
+	margin-top: 5px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
