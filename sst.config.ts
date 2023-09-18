@@ -1,6 +1,7 @@
 import { SSTConfig } from "sst";
 import { createApi, createTable } from "./stacks/backendStack";
 import { FrontendStack } from "./stacks/frontendStack";
+import { Storage } from "./stacks/storageStack";
 
 export default {
 	config(_input) {
@@ -14,6 +15,7 @@ export default {
 			app.setDefaultRemovalPolicy('destroy');
 		}
 		app
+			.stack(Storage)
 			.stack(createTable)
 			.stack(createApi)
 			.stack(FrontendStack);

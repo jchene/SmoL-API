@@ -1,48 +1,46 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Get.css'
+import PokemonButton from '../subcomponents/buttons/PokemonButton';
 
-function inputContainer(displayMode: boolean): JSX.Element  {
-	if (displayMode){
+function inputContainer(displayMode: boolean): JSX.Element {
+	if (displayMode) {
 		return (
-			<>
-				<input type='text' placeholder='team'></input>
-				<input type='text' placeholder='name'></input>
-			</>
+			<><input type='text' placeholder='team'></input>
+				<input type='text' placeholder='name'></input></>
 		)
 	}
-	return (
-		<>
-			<input type='text' placeholder='id'></input>
-		</>
-	)
+	return ( <><input type='text' placeholder='id'></input></> )
 }
 
 function Get() {
 	const [switchDisplayTo, setDisplayTo] = useState<boolean>(false);
 	const navigate = useNavigate();
-
 	return (
 		<>
-			<div className='banner'>
+			<div className="h-[5vh] text-[white] text-center bg-[#7932bd] border text-[large] font-medium mt-[5px] mx-2.5 px-0 py-2.5 rounded-[10px] border-solid border-[black]">
 				Get Users by {switchDisplayTo ? 'Team' : 'Id'}
 			</div>
-			<div className="button-container">
-				<div className="card">
+			<div className="relative flex justify-between">
+				<div className="p-8">
 					<button onClick={() => { navigate('/'); }}>
 						Home
 					</button>
 				</div>
-				<div className="card">
+				<div className="p-8">
 					<button onClick={() => { setDisplayTo(!switchDisplayTo) }}>
 						Get by {switchDisplayTo ? 'id' : 'team'}
 					</button>
 				</div>
 			</div>
-			<div className='input-container'>
+			<div className="h-[5vh] text-[black] border text-center mx-2.5 rounded-lg border-solid border-[#7932bd]">
 				{inputContainer(switchDisplayTo)}
-				<input type='submit' value='Get' className='input-submit'></input>
+				<div className="p-8">
+					<button className="bg-[#7932bd] text-[white]" onClick={() => { }}>
+						Get
+					</button>
+				</div>
 			</div>
+			<PokemonButton destination='/pokemon' />
 		</>
 	)
 }

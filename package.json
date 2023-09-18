@@ -22,8 +22,12 @@
 	],
 	"dependencies": {
 		"@aws-sdk/client-dynamodb": "^3.409.0",
+		"@babel/preset-typescript": "^7.22.15",
 		"@trpc/server": "^10.38.1",
+		"aws-cdk-lib": "^2.96.1",
+		"babel-core": "^6.26.3",
 		"electrodb": "^2.9.1",
-		"kuuid": "^1.0.1"
+		"kuuid": "^1.0.1",
+		"proxy-agent": "^6.3.1"
 	}
 }

@@ -1,35 +1,22 @@
-import './Home.css'
-import { useNavigate } from 'react-router-dom'
+import PokemonButton from '../subcomponents/buttons/PokemonButton';
+import NavButton from '../subcomponents/buttons/NavButton';
+import TopBanner from '../subcomponents/banners/TopBanner';
 
 function Home() {
-	const navigate = useNavigate()
 	return (
 		<>
-			<div className='title-container'>
-				<h1>tRPC API</h1>
+			<TopBanner content='tRPC API'/>
+			<div className="relative flex justify-between">
+				<NavButton content='List users' destination='/list'/>
+				<NavButton content='Create users' destination='/'/>
+				<NavButton content='Get users' destination='/get'/>
+				<NavButton content='Delete users' destination='/'/>
 			</div>
-			<div className="button-container">
-				<div className="card">
-					<button onClick={() => { navigate('/list'); }}>
-						List users
-					</button>
-				</div>
-				<div className="card">
-					<button onClick={() => { navigate('/'); }}>
-						Create user
-					</button>
-				</div>
-				<div className="card">
-					<button onClick={() => { navigate('/get'); }}>
-						Get users
-					</button>
-				</div>
-				<div className="card">
-					<button onClick={() => { navigate('/'); }}>
-						Delete users
-					</button>
-				</div>
+			<TopBanner content='Floorplan'/>
+			<div className="relative flex justify-center">
+				<NavButton content='Floorplan' destination='/floorplan'/>
 			</div>
+			<PokemonButton destination='/pokemon'/>
 		</>
 	)
 }

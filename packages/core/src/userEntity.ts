@@ -3,7 +3,7 @@ import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { Table } from "sst/node/table";
 
 const region = "eu-west-1";
-const table = Table.UserTable.tableName;
+const table = Table.UserTable.tableName
 const client = new DocumentClient({ region });
 
 export const userEntity = new Entity({

@@ -1,3 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+::before,
+::after {
+  box-sizing: border-box; /* 1 */
+  border-width: 0; /* 2 */
+  border-style: solid; /* 2 */
+  border-color: theme("borderColor.DEFAULT", currentColor); /* 2 */
+}
+
+::before,
+::after {
+  --tw-content: "";
+}
+
 :root {
 	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
@@ -16,18 +34,13 @@
 #root {
 	height: 100%;
 	width: 100%;
+	min-width: 350px;
+	display: flex;
+	flex-direction: column;
 }
 
 * {
 	box-sizing: border-box;
-}
-
-body {
-	height: 100vh;
-	width: 100vw;
-	
-	display: flex;
-
 	margin: 0;
 	padding: 0;
 }
@@ -56,33 +69,4 @@ h1 {
     font-size: 3em;
 	font-weight: 500;
 	font-family: inherit;
-}
-
-.button-container {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-}
-
-.card {
-	padding: 2em;
-}
-
-.banner {
-	height: 5vh;
-
-    color: white;
-	text-align: center;
-    background-color: #7932bd;
-
-	border: 1px solid;
-	border-radius: 10px;
-	border-color: black;
-
-	margin-left: 10px;
-	margin-right: 10px;
-	margin-top: 5px;
-	padding: 10px 0;
-	font-size: large;
-	font-weight: 500;
 }
