@@ -1,10 +1,10 @@
 import { StackContext, StaticSite, use } from "sst/constructs";
-import { createApi } from "./backendStack";
-import { Storage } from "./storageStack";
+import { createApi } from "./createApi";
+import { createBucket } from "./createBucket";
 
-export function FrontendStack({ stack, app }: StackContext) {
+export function createStaticSite({ stack, app }: StackContext) {
 	const { api } = use(createApi);
-	const bucket = use(Storage);
+	const { bucket } = use(createBucket);
 
 	const site = new StaticSite(stack, "ReactSite", {
 		path: "packages/frontend",

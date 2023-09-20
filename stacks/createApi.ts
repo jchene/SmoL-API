@@ -1,34 +1,18 @@
-import { StackContext, Api, Table, use } from "sst/constructs";
-
-export const createTable = ({ stack }: StackContext) => {
-	const table = new Table(stack, "UserTable", {
-		fields: {
-			pk: "string",
-			sk: "string",
-			gsi1pk: "string",
-			gsi1sk: "string",
-		},
-		primaryIndex: {
-			partitionKey: "pk",
-			sortKey: "sk"
-		},
-		globalIndexes: {
-			gsi1: { partitionKey: "gsi1pk", sortKey: "gsi1sk" }
-		}
-	});
-	return { table };
-}
+import { StackContext, Api, use } from "sst/constructs";
+import { createBucket } from "./createBucket";
+import { createTable } from "./createTable";
 
 export const createApi = ({ stack }: StackContext) => {
 	const { table } = use(createTable);
+	const { bucket } = use(createBucket);
+
 	const api = new Api(stack, "api", {
 		defaults: {
 			function: {
-				bind: [table],
+				bind: [table, bucket],
 			},
 		},
 		routes: {
-			"GET /": "packages/functions/src/home.main",
 			"GET /list": "packages/functions/src/sstHandlers.listUsers",
 			"POST /u": "packages/functions/src/sstHandlers.createUser",
 			"GET /u": "packages/functions/src/sstHandlers.getUser",
@@ -44,6 +28,12 @@ export const createApi = ({ stack }: StackContext) => {
 				authorizer: 'none',
 				function: {
 					handler: 'packages/core/src/trpcRouter.handler',
+				},
+			},
+			"GET /python": {
+				function: {
+					runtime: "python3.8",
+					handler: 'packages/functions/src/python/python.lambda_handler',
 				},
 			},
 		},

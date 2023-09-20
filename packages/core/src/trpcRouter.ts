@@ -3,26 +3,11 @@ import { APIGatewayEvent, CreateAWSLambdaContextOptions, awsLambdaRequestHandler
 import * as trpc from "@trpc/server";
 import * as z from "zod";
 import * as crud from "../../functions/src/crud";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Storage } from '../../../stacks/storageStack';
-import { v4 as uuidv4 } from 'uuid';
-import { use } from 'sst/constructs';
+import { createPresignedUrlWithClient, listBucketWithClient } from './s3Client';
 
 const t = trpc.initTRPC.create();
 export const router = t.router;
 export const publicProcedure = t.procedure;
-
-const createPresignedUrlWithClient = async () => {
-	const client = new S3Client("eu-west-1");
-	const bucket = use(Storage);
-	const command = new PutObjectCommand({
-		Bucket: bucket.bucketName,
-		Key: uuidv4()
-	});
-	const signedUrl = await getSignedUrl(client, command, { expiresIn: 3600 });
-	return { url: signedUrl };
-};
 
 const appRouter = router({
 	list: publicProcedure
@@ -41,7 +26,12 @@ const appRouter = router({
 		.query(async () => {
 			const presignedUrl = await createPresignedUrlWithClient();
 			return presignedUrl;
-		})
+		}),
+	listPlans: publicProcedure
+		.query(async () => {
+			const objects = await listBucketWithClient();
+			return objects;
+		}),
 });
 
 const createContext = ({ }: CreateAWSLambdaContextOptions<APIGatewayEvent>) => ({})

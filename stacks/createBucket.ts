@@ -3,7 +3,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { BlockPublicAccess } from 'aws-cdk-lib/aws-s3';
 
-export function Storage({ stack }: StackContext) {
+export function createBucket({ stack }: StackContext) {
 	const bucket = new Bucket(stack, 'assets', {
 		cdk: {
 			bucket: {
@@ -32,5 +32,5 @@ export function Storage({ stack }: StackContext) {
 			},
 		},
 	});
-	return bucket;
+	return { bucket };
 }

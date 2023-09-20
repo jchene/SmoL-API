@@ -13,7 +13,7 @@ import './index.css'
 export const client = createTRPCProxyClient<AppRouter>({
 	links: [
 		httpBatchLink({
-			url: 'https://djrn4etstc.execute-api.eu-west-1.amazonaws.com/trpc',
+			url: 'https://setdkhlhgj.execute-api.eu-west-1.amazonaws.com/trpc',
 		}),
 	],
 });

@@ -1,7 +1,8 @@
 import { SSTConfig } from "sst";
-import { createApi, createTable } from "./stacks/backendStack";
-import { FrontendStack } from "./stacks/frontendStack";
-import { Storage } from "./stacks/storageStack";
+import { createBucket } from "./stacks/createBucket";
+import { createTable } from "./stacks/createTable";
+import { createApi } from "./stacks/createApi";
+import { createStaticSite } from "./stacks/createStaticSite";
 
 export default {
 	config(_input) {
@@ -15,9 +16,9 @@ export default {
 			app.setDefaultRemovalPolicy('destroy');
 		}
 		app
-			.stack(Storage)
+			.stack(createBucket)
 			.stack(createTable)
 			.stack(createApi)
-			.stack(FrontendStack);
+			.stack(createStaticSite);
 	},
 } satisfies SSTConfig;
