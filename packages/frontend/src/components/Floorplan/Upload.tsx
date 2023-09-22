@@ -47,6 +47,7 @@ function UploadContainer() {
 				<Upload className='p-8' {...props}>
 					<Button icon={<UploadOutlined />}>Click to Upload</Button>
 				</Upload>
+				<img src="https://jchene-first-sst-app-createb-assetsbucket5f3b285a-ke23l8et3h37.s3.eu-west-1.amazonaws.com/05c91e3b-1e5d-497d-91f5-c8375f742c2f"/>
 			</div>
 			
 		</>
