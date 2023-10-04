@@ -13,3 +13,9 @@ node_modules
 
 # local env files
 .env*.local
+
+# vscode cache
+.vscode
+
+# python cache
+__pycache__
