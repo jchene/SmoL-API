@@ -3,12 +3,11 @@ import { UploadRequestOption } from 'rc-upload/lib/interface';
 import { client } from '../../main';
 import { Button, Upload, UploadProps, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import TopBanner from '../subcomponents/banners/TopBanner';
 
 const uploadFile = async (options: UploadRequestOption) => {
 	try {
 		const clientUrl = await client.signedUrl.query()
-		console.log('Presigned url:', clientUrl)
+			console.log('Presigned url:', clientUrl)
 		if (clientUrl) {
 			await axios
 				.put(clientUrl.url, options.file.slice(), {
@@ -42,7 +41,6 @@ function UploadContainer() {
 	};
 	return (
 		<>
-			<TopBanner content='Upload' />
 			<div className='relative flex justify-center'>
 				<Upload className='p-8' {...props}>
 					<Button icon={<UploadOutlined />}>Click to Upload</Button>

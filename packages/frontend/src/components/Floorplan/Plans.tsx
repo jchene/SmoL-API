@@ -10,7 +10,7 @@ interface CircleProps {
 	content: string
 }
 
-const Circle: React.FC<CircleProps> = ({ cx, cy, onClick, content }) => {
+const Circle: React.FC<CircleProps> = ({ cx, cy, r, fill, onClick, content }) => {
 	return (
 		<>
 			<text x={cx} y={cy+5} text-anchor="middle" fill="black">{content}</text>
@@ -21,7 +21,7 @@ const Circle: React.FC<CircleProps> = ({ cx, cy, onClick, content }) => {
 
 interface ClickableCirclesProps {
 	img: string
-	positions: [[number, number]]
+	positions: [{x: number, y: number, direction: string}]
 }
 
 const ClickableCirclesWithImage: React.FC<ClickableCirclesProps> = ({ img, positions }) => {
@@ -29,6 +29,7 @@ const ClickableCirclesWithImage: React.FC<ClickableCirclesProps> = ({ img, posit
 	const handleCircleClick = (index: number) => {
 		alert(`Clicked Circle ${index + 1}`);
 	};
+
 	return (
 		<div style={{ position: 'relative' }}>
 			<img src={img} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
@@ -36,8 +37,8 @@ const ClickableCirclesWithImage: React.FC<ClickableCirclesProps> = ({ img, posit
 				{circlePositions.map((position, index) => (
 					<Circle
 						key={index}
-						cx={position[0]}
-						cy={position[1]}
+						cx={position.x}
+						cy={position.y}
 						onClick={() => handleCircleClick(index)}
 						content={String(index)}
 					/>
@@ -57,6 +58,7 @@ function Plans() {
 					axios.get("https://setdkhlhgj.execute-api.eu-west-1.amazonaws.com/python").then((response) => {
 						setPlan(<ClickableCirclesWithImage img={response.data.url} positions={response.data.positions}/>)
 					})
+					
 				}} />
 			</div>
 			<div className='relative flex justify-center'>

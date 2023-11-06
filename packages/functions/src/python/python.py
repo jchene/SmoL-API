@@ -17,14 +17,16 @@ DILATE_ITERATIONS=1
 
 #Desk detection constants
 DESK_THRESHOLD = 0.6
-DUPLICATES_THRESHOLD = 5
+DUPLICATES_THRESHOLD = 50
 ALIGN_THRESHOLD = 5
+GROUP_MAX_DIST = 80
+BASE_TEMPLATE_DIRECTION = 'left'
 
 #AWS constants
 BUCKET = 'jchene-first-sst-app-createb-assetsbucket5f3b285a-ke23l8et3h37'
 REGION = 'eu-west-1'
-FLOOR_NAME = '64bb8e13-829c-4846-9903-0f9644ec0dab'
-TEMPLATE_NAMES = [ '05c91e3b-1e5d-497d-91f5-c8375f742c2f' ]
+FLOOR_NAME = '44aabd29-fed5-420a-84fa-523bd918cef8'
+TEMPLATE_NAMES = [ '0deb27d3-8760-4819-8577-74c5e8df9c44' ]
 
 def get_walls(image):
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -59,12 +61,26 @@ def getImageFromBucket(name):
 # Get templates images from bucket using name array
 def getTemplates(names):
 	templates = []
+	direction = BASE_TEMPLATE_DIRECTION
 	for i in range(0, len(names)):
 		base_template = getImageFromBucket(names[i])
-		templates.append(base_template)
+		full_base_template = { 'template': base_template, 'direction': direction }
+		templates.append(full_base_template)
 		for j in range(0, 3):
 			base_template = cv2.rotate(base_template, cv2.ROTATE_90_CLOCKWISE)
-			templates.append(base_template)
+			match direction:
+				case 'left':
+					direction = 'top'
+				case 'top':
+					direction = 'right'
+				case 'right':
+					direction = 'bottom'
+				case 'bottom':
+					direction = 'left'
+				case _:
+					direction = 'left'
+			full_template = { 'template': base_template, 'direction': direction }
+			templates.append(full_template)
 	return templates
 
 # Remove duplicates from point list
@@ -84,25 +100,26 @@ def circle_position_offset(positions, grey_scale_template):
 		new_positions.append([int(pos[0] + (w / 1.9)), int(pos[1] + (h / 2))])
 	return new_positions
 
-
-
+# Aligns points that are too close to each other
 def align_points(positions):
-	sorted_pos = sorted(positions, key=lambda coord: coord[0])
+	sorted_pos = sorted(positions, key=lambda x: x['position'][0])
 	lastx = -1
 	for pos in sorted_pos:
-		if (abs(pos[0] - lastx) < ALIGN_THRESHOLD):
-			pos[0] = lastx
-		lastx = pos[0]
-	sorted_pos = sorted(sorted_pos, key=lambda coord: coord[1])
+		if (abs(pos['position'][0] - lastx) < ALIGN_THRESHOLD):
+			pos['position'][0] = lastx
+		lastx = pos['position'][0]
+	sorted_pos = sorted(sorted_pos, key=lambda x: x['position'][1])
 	lasty = -1
 	for pos in sorted_pos:
-		if (abs(pos[1] - lasty) < ALIGN_THRESHOLD):
-			pos[1] = lasty
-		lasty = pos[1]
+		if (abs(pos['position'][1] - lasty) < ALIGN_THRESHOLD):
+			pos['position'][1] = lasty
+		lasty = pos['position'][1]
 	return sorted_pos
-	
-def sort_by_group(points, gmethod, pmethod):
-	clustering = DBSCAN(eps=50, min_samples=2).fit(points)
+
+#NEED UPDATE WITH DIRECTIONS
+#Sorts points by group then sorts points in each group by x or y
+def sort_by_group(points, groupMethod, pointMethod):
+	clustering = DBSCAN(eps=GROUP_MAX_DIST, min_samples=2).fit(points)
 	labels = clustering.labels_
 	groups = {}
 	for label, point in zip(labels, points):
@@ -110,17 +127,12 @@ def sort_by_group(points, gmethod, pmethod):
 			groups[label] = []
 		groups[label].append(list(point))	
 	for label in groups:
-		match pmethod:
-			case "x":
-				groups[label] = sorted(groups[label], key=lambda x: (x[0], x[1]))
+		match pointMethod:
 			case "y":
 				groups[label] = sorted(groups[label], key=lambda x: (x[1], x[0]))
 			case _:
 				groups[label] = sorted(groups[label], key=lambda x: (x[0], x[1]))
-		
-	match gmethod:
-		case "x":
-			sorted_groups = sorted(groups.values(), key=lambda x: (x[0][0], x[0][1]))
+	match groupMethod:
 		case "y":
 			sorted_groups = sorted(groups.values(), key=lambda x: (x[0][1], x[0][0]))
 		case _:
@@ -128,16 +140,15 @@ def sort_by_group(points, gmethod, pmethod):
 	final_list = [point for group in sorted_groups for point in group]
 	return final_list
 
-def sort_points(points, method, gmethod, pmethod):
+# Sorts points using different methods
+def sort_points(points, method, groupMethod, pointMethod):
 	match method:
 		case "y":
-			return sorted(points, key=lambda coord: (coord[1], coord[0]))
-		case "x":
-			return sorted(points, key=lambda coord: (coord[0], coord[1]))
-		case "g":
-			return sort_by_group(points, gmethod, pmethod)
+			return sorted(points, key=lambda x: (x['position'][1], x['position'][0]))
+		#case "g":
+		#	return sort_by_group(points, groupMethod, pointMethod)
 		case _:
-			return sorted(points, key=lambda coord: (coord[0], coord[1]))
+			return sorted(points, key=lambda x: (x['position'][0], x['position'][1]))
 
 # Encode and uploads on the bucket the result_image
 def putImageToBucket(s3, result_image):
@@ -146,6 +157,18 @@ def putImageToBucket(s3, result_image):
 	s3.Object(BUCKET, result_name).put(Body=image_string)
 	return result_name
 
+# Create a list of dictionaries from a list of positions
+def create_dict_list(positions):
+	list = []
+	for pos in positions:
+		dict = {}
+		dict['x'] = pos['position'][0]
+		dict['y'] = pos['position'][1]
+		dict['direction'] = pos['direction']
+		list.append(dict)
+	return list
+
+# Lambda handler
 def lambda_handler(event, context):
 	s3 = boto3.resource(
 		service_name='s3',
@@ -156,28 +179,30 @@ def lambda_handler(event, context):
 	floor = getImageFromBucket(FLOOR_NAME)
 	grey_scale_floor = cv2.cvtColor(floor, cv2.COLOR_BGR2GRAY)
 
-	all_positions = []
+	positions_w_direction = []
 	for i in range(0, len(templates)):
-		grey_scale_template = cv2.cvtColor(templates[i], cv2.COLOR_BGR2GRAY)
+		grey_scale_template = cv2.cvtColor(templates[i]['template'], cv2.COLOR_BGR2GRAY)
 		results = cv2.matchTemplate( grey_scale_floor, grey_scale_template, cv2.TM_CCOEFF_NORMED)
 		locations = np.where(results >= DESK_THRESHOLD)
 		positions = []
 		for pt in zip(*locations[::-1]):
 			positions.append([int(pt[0]), int(pt[1])])
 		positions = remove_duplicates(positions)
-		new_positions = circle_position_offset(positions, grey_scale_template)
-		all_positions = all_positions + new_positions
-	aligned_points = align_points(all_positions)
-	sorted_positions = sort_points(aligned_points, "g", "y", "y")
+		circle_positions = circle_position_offset(positions, grey_scale_template)
+		for j in range(0, len(circle_positions)):
+			positions_w_direction.append({ 'position': circle_positions[j], 'direction': templates[i]['direction'] })
+	print("positions:", positions_w_direction)
+	aligned_positions = align_points(positions_w_direction)
+	print("aligned:", aligned_positions)
+	sorted_positions = sort_points(aligned_positions, "", "y", "x")
+	print("sorted:", sorted_positions)
 
-	raw_result = get_walls(floor)
-	clean_result = remove_small_objects(raw_result)
-	inverted_image = invert_image(clean_result)
-	result_name = putImageToBucket(s3, inverted_image)
+	dict = create_dict_list(sorted_positions)
+	print(dict)
 
 	response_data = {
-		'url': 'https://' + BUCKET + ".s3." + REGION + ".amazonaws.com/" + result_name,
-		'positions' : sorted_positions
+		'url': 'https://' + BUCKET + ".s3." + REGION + ".amazonaws.com/" + FLOOR_NAME,
+		'positions' : dict
 	}
 	response_json = json.dumps(response_data)
 	return {
