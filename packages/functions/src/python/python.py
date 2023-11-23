@@ -1,3 +1,4 @@
+import os
 import cv2
 import math
 import json
@@ -16,17 +17,19 @@ AREA_THRESHOLD=300
 DILATE_ITERATIONS=1
 
 #Desk detection constants
-DESK_THRESHOLD = 0.6
-DUPLICATES_THRESHOLD = 50
-ALIGN_THRESHOLD = 5
-GROUP_MAX_DIST = 80
+DESK_THRESHOLD = 1
+DUPLICATES_THRESHOLD = 5
+ALIGN_THRESHOLD = 1
 BASE_TEMPLATE_DIRECTION = 'left'
 
+#UNUSED
+GROUP_MAX_DIST = 80
+
 #AWS constants
-BUCKET = 'jchene-first-sst-app-createb-assetsbucket5f3b285a-ke23l8et3h37'
-REGION = 'eu-west-1'
-FLOOR_NAME = '44aabd29-fed5-420a-84fa-523bd918cef8'
-TEMPLATE_NAMES = [ '0deb27d3-8760-4819-8577-74c5e8df9c44' ]
+BUCKET = os.environ['MY_AWS_BUCKET']
+REGION = os.environ['MY_AWS_REGION']
+FLOOR_NAME = 'cleaner_big_floorplan.png'
+TEMPLATE_NAMES = [ 'big_desk4.png' ]
 
 def get_walls(image):
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -172,12 +175,21 @@ def create_dict_list(positions):
 def lambda_handler(event, context):
 	s3 = boto3.resource(
 		service_name='s3',
-		aws_access_key_id='AKIAXC3MIHYK3FLR7IGJ',
-		aws_secret_access_key='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'
+		aws_access_key_id=os.environ['MY_AWS_ID'],
+		aws_secret_access_key=os.environ['MY_AWS_KEY']
 	)
 	templates = getTemplates(TEMPLATE_NAMES)
 	floor = getImageFromBucket(FLOOR_NAME)
-	grey_scale_floor = cv2.cvtColor(floor, cv2.COLOR_BGR2GRAY)
+	if (floor is None):
+		return {
+			'statusCode': 400,
+			'body': 'Floor image not found lelele'
+		}
+	try:
+		temp = cv2.cvtColor(floor, cv2.COLOR_GRAY2BGR)
+		grey_scale_floor = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
+	except:
+		grey_scale_floor = cv2.cvtColor(floor, cv2.COLOR_BGR2GRAY)
 
 	positions_w_direction = []
 	for i in range(0, len(templates)):

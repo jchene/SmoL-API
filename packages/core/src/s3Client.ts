@@ -9,6 +9,7 @@ export const createPresignedUrlWithClient = async () => {
 	const command = new PutObjectCommand({
 		Bucket: Bucket.assets.bucketName,
 		Key: uuidv4(),
+		ContentType: 'image/png',
 	});
 	const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 	return { url: signedUrl };

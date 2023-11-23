@@ -1,52 +1,55 @@
-import axios from 'axios';
-import { UploadRequestOption } from 'rc-upload/lib/interface';
-import { client } from '../../main';
 import { Button, Upload, UploadProps, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import React from 'react';
 
-const uploadFile = async (options: UploadRequestOption) => {
-	try {
-		const clientUrl = await client.signedUrl.query()
-			console.log('Presigned url:', clientUrl)
-		if (clientUrl) {
-			await axios
-				.put(clientUrl.url, options.file.slice(), {
-					headers: { 'Content-Type': 'image/*' },
-				})
-				.then(async () => {
-					message.success('Successfully uploaded');
-				})
-				.catch((e) => {
-					message.success('Failed to upload: ', e);
-				});
+interface UploadContainerProps {
+	floorplanPresignedUrl: string;
+	deskPresignedUrl: string;
+}
+
+const UploadContainer: React.FC<UploadContainerProps> = ({
+	floorplanPresignedUrl,
+	deskPresignedUrl,
+}) => {
+	const beforeUpload = (file: File) => {
+		const isPNG = file.type === 'image/png';
+		if (!isPNG) {
+			message.error(`${file.name} is not a png file`);
+		}
+		return isPNG || Upload.LIST_IGNORE;
+	}
+	const onChange = (info: any) => {
+		if (info.file.status !== 'uploading') {
+			console.log(info.file, info.fileList);
+		}
+		if (info.file.status === 'done') {
+			message.success(`${info.file.name} file uploaded successfully`);
+		} else if (info.file.status === 'error') {
+			message.error(`${info.file.name} file upload failed.`);
 		}
 	}
-	catch (e) {
-		console.log("Couldn't upload file:", e)
+	const getProp = (type: 'desk' | 'floorplan'): UploadProps => {
+		return {
+			method: 'PUT',
+			action: type === 'desk' ? deskPresignedUrl : floorplanPresignedUrl,
+			headers: { 'content-type': 'image/png' },
+			beforeUpload: beforeUpload,
+			onChange: onChange,
+		};
 	}
-};
-
-function UploadContainer() {
-
-	const props: UploadProps = {
-		customRequest: uploadFile,
-		onChange(info) {
-			if (info.file.status !== 'uploading')
-				message.info(`uploading ${info.file.name}`)
-			if (info.file.status === 'done')
-				message.success(`${info.file.name} file uploaded successfully`);
-			else if (info.file.status === 'error')
-				message.error(`${info.file.name} file upload failed.`);
-		},
-	};
+	const fpProps = getProp('floorplan');
+	const dProps = getProp('desk');
 	return (
 		<>
 			<div className='relative flex justify-center'>
-				<Upload className='p-8' {...props}>
-					<Button icon={<UploadOutlined />}>Click to Upload</Button>
+				<Upload className='p-8' {...fpProps}>
+					<Button icon={<UploadOutlined />}>Floorplan</Button>
+				</Upload>
+				<Upload className='p-8' {...dProps}>
+					<Button icon={<UploadOutlined />}>Desk</Button>
 				</Upload>
 			</div>
-			
+
 		</>
 	)
 }
